@@ -1,0 +1,6 @@
+[SECTION1]
+
+[SECTION2]
+Key21=1
+Key22 = TEST
+Key23 = 5
