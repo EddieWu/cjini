@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
+#include <ctype.h> 
 #include "jini.h"
 
 CJini::CJini(void)
@@ -55,6 +56,10 @@ CJini::~CJini()
   {
     free(JSec);
   }
+  if(NULL!=cIniStr)
+  {
+    free(cIniStr);
+  }
   printf("~CJini()\n");
 }
 /************************************
@@ -96,6 +101,20 @@ bool CJini::ReadAllIni(void)
 #endif
   //rest position
   fseek(pJiniFile,0L,SEEK_SET);
+  //ini file is empty or invalid(MIN:[S]\nK=1)
+  if(lFileLen<7)
+  {
+    return false;
+  }
+  //malloc ini context size
+  cIniStr = (char*)malloc(/*sizeof(char)**/lFileLen+1);
+  //init
+  memset(cIniStr,0x0,lFileLen+1);
+  //read all context
+  fread(cIniStr,lFileLen,lFileLen,pJiniFile);
+#ifdef _DEBUGMODE_
+  printf("cIniStr[%s]\n",cIniStr);
+#endif
   //01.First collect section number
   //and each section's keys number
   char ch = 0x0;
@@ -103,11 +122,11 @@ bool CJini::ReadAllIni(void)
   int  iSecFlag = 0;
   // key value area
   int  iKeyFlag = 0;
-  int  iKeyValFlag = 0;
+  int  iValFlag = 0;
   // annotate
   bool bAnnoLine = false;
-  ch=fgetc(pJiniFile);
-  while (ch != EOF)
+  ch=*cIniStr;//fgetc(pJiniFile);
+  while (ch != '\0')
   {
     if('[' == ch || ']' == ch)
 	{
@@ -117,14 +136,19 @@ bool CJini::ReadAllIni(void)
 	else if('\r' == ch || '\n' == ch)
 	{
 	  iSecFlag = 0;
-	  iKeyValFlag = 0;
+	  iValFlag = 0;
 	  iKeyFlag++;
+	  bAnnoLine = false;
 	  //continue;
 	}
 	else if('=' == ch)
 	{
 	  iKeyFlag = 0;
-	  iKeyValFlag++;
+	  iValFlag++;
+	}
+	else if(';' == ch)
+	{
+	  bAnnoLine = true;
 	}
 	else
 	{
@@ -136,8 +160,13 @@ bool CJini::ReadAllIni(void)
 	  iSectionCount++;  //+1
 	  iSecFlag = 0;
 	}	
-    ch=fgetc(pJiniFile);
+    //ch=fgetc(pJiniFile);
+	cIniStr++;
+	ch=*cIniStr;
   }
+  //rest position
+  //fseek(pJiniFile,0L,SEEK_SET);
+  cIniStr-=lFileLen;
 #ifdef _DEBUGMODE_
   printf("SectionNumber[%d]\n",iSectionCount);
 #endif
@@ -153,8 +182,11 @@ bool CJini::ReadAllIni(void)
     return false;
   }
 #ifdef _DEBUGMODE_
+  printf("*JSec=[%d]\n",JSec);
   printf("JSec[0].KeyNum=[%d]\n",JSec[0].KeyNum);
 #endif
+  //full JSec
+  FullJiniHashs(iSectionCount);
   return true;
 }
 /************************************
@@ -166,12 +198,180 @@ bool CJini::JiniFileValid(void)
 {
   return bIniExist;
 }
-
+/************************************
+* FullJiniHashs()
+* full the JiniHashs&JiniSection
+* argument(iSectionNum:section numbers)
+************************************/
+bool CJini::FullJiniHashs(int iSectionNum)
+{
+  if(NULL==JSec ||0==lFileLen)
+  {
+    return false;  
+  }
+  int iSecPos = -1;
+  int iKeyPos = -1;
+  int iValPos = -1;
+  do
+  {
+    if(*cIniStr=='[')
+	{
+	  iSecPos = 0;
+	}
+	else if(*cIniStr==']')
+	{
+	  iSecPos = 1;
+	}
+	else if(*cIniStr=='\r' ||*cIniStr=='\n')
+	{
+	  iSecPos = -1;
+      iKeyPos = -1;
+      iValPos = -1;
+	}
+    
+    iSectionNum--;
+  }while(iSectionNum>0);
+  delete cIniStr;
+  return true;
+}
+/************************************
+* JiniSpaceTrim()
+* trim the string(char*)
+* argument(int iLRALL:0:ALL,1:LEFT,
+* 2:RIGHT,3:MIDDLE)
+************************************/
+void CJini::JiniSpaceTrim(char* cMixStr,int iLRALL)
+{
+#ifdef _DEBUGMODE_
+  printf("Function JiniSpaceTrim Start\n");
+  printf("cMixStr=[%s]\n",cMixStr);
+#endif
+  char *cTmp    = cMixStr;
+  char *cTmpStd = cMixStr;
+  char cMStr = *cTmp;
+  char *cTmpPos = cMixStr;
+  int  iSLen    = strlen(cTmp);
+  bool bTrimCancel = false;
+  int  iLeftPos = 0;
+  int  iRightPos = 0;
+  int  j = 0;
+  //get space at left numbers
+  //left trim&middle trim need
+  if(1==iLRALL || 3==iLRALL)
+  {
+    while(*cTmpPos!='\0')
+    {
+      if(!isspace(*cTmpPos))
+	  {
+	    break;
+	  }
+	  else
+	  {
+	    iLeftPos++;
+	  }
+      cTmpPos++;
+    }
+  }
+  //reset pointer cTmpPos
+  cTmpPos = cMixStr;
+  //get space at right numbers
+  //right trim&middle trim need
+  if(2==iLRALL || 3==iLRALL)
+  {
+    cTmpPos+=(iSLen-1);
+    while(*cTmpPos!='\0')
+    {
+      if(!isspace(*cTmpPos))
+	  {
+	    break;
+	  }
+	  else
+	  {
+	    iRightPos++;
+	  }
+      cTmpPos--;
+    }
+  }
+  while(*cTmp!='\0')
+  {
+    switch(iLRALL)
+	{
+	  //LEFT
+	  case 1:
+	    if(!isspace(cMStr))
+		{
+		  bTrimCancel = true;
+		}
+	    break;
+	  case 2:
+	    bTrimCancel = true;
+		if(j>=(iSLen-iRightPos))
+		{
+		  bTrimCancel = false;
+		}
+	    break;
+	  case 3:
+	    bTrimCancel = false;
+		//left area
+		if(j<iLeftPos)
+		{
+		  bTrimCancel = true;
+		}
+		//right area
+		if(j>=(iSLen-iRightPos))
+		{
+		  bTrimCancel = true;
+		}
+	    break;
+	  default:
+	    break;
+	}
+	if(bTrimCancel)
+	{
+	  cMStr=0x31;
+	}
+    if(!isspace(cMStr/**cTmp*/))
+	{
+	  *cTmpStd = *cTmp;
+	  cTmp++;
+	  cTmpStd++;
+#ifdef _DEBUGMODE_
+      //printf("cTmp=[%s]\n",cTmp);
+      //printf("cTmpStd=[%s]\n",cTmpStd);
+#endif
+	}
+	else
+	{
+	  cTmp++;
+	}
+	cMStr = *cTmp;
+	j++;
+  }
+  *cTmpStd = '\0';
+#ifdef _DEBUGMODE_
+  printf("cMixStr=[%s]\n",cMixStr);
+  printf("Function JiniSpaceTrim End\n");
+#endif
+}
 #ifdef JINI_TEST_MAIN
 #include <stdio.h>
 //int main(void) {
 int main(int argc,char *argv[]) {
   CJini *pCJini = new CJini();
+#ifdef _DEBUGMODE_
+  char cTrimStr[] = " T S  ESD.   ";
+  printf("ALL\n");
+  pCJini->JiniSpaceTrim(cTrimStr);
+  strcpy(cTrimStr," T S  ESD.   ");
+  printf("LEFT\n");
+  pCJini->JiniSpaceTrim(cTrimStr,1);
+  strcpy(cTrimStr," T S  ESD.   ");
+  printf("RIGHT\n");
+  pCJini->JiniSpaceTrim(cTrimStr,2);
+  strcpy(cTrimStr," T S  E SD.   ");
+  printf("MIDDLE\n");
+  pCJini->JiniSpaceTrim(cTrimStr,3);
+#endif
   delete pCJini;
   char sFilePath[] = "C:\\test.txt";
   CJini *pCJiniF = new CJini(sFilePath);
