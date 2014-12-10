@@ -10,7 +10,7 @@ CJini::CJini(void)
   pJiniFile = NULL;
   JSec      = NULL;
   iSectionCount = 0;
-  printf("CJini()\n");	
+  printf("CJini()\n");    
 }
 CJini::CJini(char *pIniFilePath)
 {
@@ -29,7 +29,7 @@ CJini::CJini(char *pIniFilePath)
   else
   {
     bIniExist = true;
-	printf("fopen success[%s]\n",pIniFilePath);
+    printf("fopen success[%s]\n",pIniFilePath);
   }
   if(bIniExist && !fclose(pJiniFile))
   {
@@ -66,19 +66,19 @@ CJini::CJini(char *pIniFilePath)
   //printf("---------------------------\n%c",ch);
   while (ch != EOF)
   {
-	if('\0'==ch)
-	{
-	  break;
-	}
-	if(iGetc>lFileLen)
-	{
-	  break;
-	}
-	*cIniStr = ch;
-	iGetc++;
-	cIniStr++;
-	ch=fgetc(pJiniFile);
-	//printf("%c",ch);
+    if('\0'==ch)
+    {
+      break;
+    }
+    if(iGetc>lFileLen)
+    {
+      break;
+    }
+    *cIniStr = ch;
+    iGetc++;
+    cIniStr++;
+    ch=fgetc(pJiniFile);
+    //printf("%c",ch);
   }
   //rest position
   fseek(pJiniFile,0L,SEEK_SET);
@@ -101,13 +101,13 @@ CJini::~CJini()
   if(NULL!=JSec)
   {
     while(iSectionCount>=0)
-	{
-	  if(NULL!=JSec[iSectionCount].hsKey)
-	  {
-	    free(JSec[iSectionCount].hsKey);
-	  }
-	  iSectionCount--;
-	}
+    {
+      if(NULL!=JSec[iSectionCount].hsKey)
+      {
+        free(JSec[iSectionCount].hsKey);
+      }
+      iSectionCount--;
+    }
     free(JSec);
   }
   if(NULL!=cIniStr)
@@ -127,11 +127,11 @@ bool CJini::SetIniFilePath(char *pFilePath,bool bforce)
   if(bforce)
   {
     if(NULL!=pJiniFile)
-	{
+    {
       fclose(pJiniFile);
-	  //pJiniFile=NULL;
-	}
-	pJiniFile=fopen(pFilePath,"rb+");
+      //pJiniFile=NULL;
+    }
+    pJiniFile=fopen(pFilePath,"rb+");
     return(pJiniFile==NULL?false:true);
   }
   return true;
@@ -162,40 +162,40 @@ bool CJini::ReadAllIni(void)
   while (ch != '\0')
   {
     if('[' == ch || ']' == ch)
-	{
-	  iSecFlag++;
-	  iKeyFlag = 0;
-	}
-	else if('\r' == ch || '\n' == ch)
-	{
-	  iSecFlag = 0;
-	  iValFlag = 0;
-	  iKeyFlag++;
-	  //bAnnoLine = false;
-	  //continue;
-	}
-	else if('=' == ch)
-	{
-	  iKeyFlag = 0;
-	  iValFlag++;
-	}
-	else if(';' == ch)
-	{
-	  //bAnnoLine = true;
-	}
-	else
-	{
-	  iSecFlag++;
-	}
-	//section count
-	if(iSecFlag>2 && ']' == ch)
-	{
-	  iSectionCount++;  //+1
-	  iSecFlag = 0;
-	}	
+    {
+      iSecFlag++;
+      iKeyFlag = 0;
+    }
+    else if('\r' == ch || '\n' == ch)
+    {
+      iSecFlag = 0;
+      iValFlag = 0;
+      iKeyFlag++;
+      //bAnnoLine = false;
+      //continue;
+    }
+    else if('=' == ch)
+    {
+      iKeyFlag = 0;
+      iValFlag++;
+    }
+    else if(';' == ch)
+    {
+      //bAnnoLine = true;
+    }
+    else
+    {
+      iSecFlag++;
+    }
+    //section count
+    if(iSecFlag>2 && ']' == ch)
+    {
+      iSectionCount++;  //+1
+      iSecFlag = 0;
+    }    
     //ch=fgetc(pJiniFile);
-	cIniStr++;
-	ch=*cIniStr;
+    cIniStr++;
+    ch=*cIniStr;
   }
   //rest position
   //fseek(pJiniFile,0L,SEEK_SET);
@@ -254,60 +254,60 @@ bool CJini::FullJiniHashs(int iSectionNum)
   while(*cTempStr!='\0')
   {
     if(*cTempStr==';')
-	{
-	  bAnnoLine = true;
-	}
+    {
+      bAnnoLine = true;
+    }
     if('\r'==*cTempStr ||'\n'==*cTempStr)
-	{
-	  if(iLinePos>=LINE_MIN_LENGTH)
-	  {
-	    if(iLinePos>LINE_MAX_LENGTH)
-	    {
-	      return false;
-	    }
-		memset(cLineStr,0x0,LINE_MAX_LENGTH);
-	    strncpy(cLineStr,cIniStr,iLinePos);
-		JiniSpaceTrim(cLineStr);
-		//...
-		{
-		  int iStrLen = strlen(cLineStr);
-		  if(cLineStr[0]=='[' &&cLineStr[iStrLen-1]==']')
-		  {
-		    iSecIndex++;
-			cLineStr[0]=' ';
-			//cLineStr[iStrLen-1]=' ';
-			JiniSpaceTrim(cLineStr);
-			strncpy(JSec[iSecIndex].SectionName,cLineStr,iStrLen-2);
-			//printf("JSec[%d].SectionName[%s]\n",iSecIndex,JSec[iSecIndex].SectionName);
-		  }
-		  else
-		  {
-		    if(iSecIndex>=0 && iSecIndex<iSectionNum)
-			{
-			  int iEqualPos = JiniChrIndex(cLineStr,'=');
+    {
+      if(iLinePos>=LINE_MIN_LENGTH)
+      {
+        if(iLinePos>LINE_MAX_LENGTH)
+        {
+          return false;
+        }
+        memset(cLineStr,0x0,LINE_MAX_LENGTH);
+        strncpy(cLineStr,cIniStr,iLinePos);
+        JiniSpaceTrim(cLineStr);
+        //...
+        {
+          int iStrLen = strlen(cLineStr);
+          if(cLineStr[0]=='[' &&cLineStr[iStrLen-1]==']')
+          {
+            iSecIndex++;
+            cLineStr[0]=' ';
+            //cLineStr[iStrLen-1]=' ';
+            JiniSpaceTrim(cLineStr);
+            strncpy(JSec[iSecIndex].SectionName,cLineStr,iStrLen-2);
+            //printf("JSec[%d].SectionName[%s]\n",iSecIndex,JSec[iSecIndex].SectionName);
+          }
+          else
+          {
+            if(iSecIndex>=0 && iSecIndex<iSectionNum)
+            {
+              int iEqualPos = JiniChrIndex(cLineStr,'=');
 #ifdef _DEBUGMODE_
               printf("iSecIndex={%d}\n",iSecIndex);
               printf("iEqualPos={%d}\n",iEqualPos);
 #endif
-			  if(iEqualPos>0)
-			  {
-			    JSec[iSecIndex].KeyNum++;
-			    //if(NULL==JSec[iSecIndex].hsKey)
-			    int iHashNum = JSec[iSecIndex].KeyNum;
+              if(iEqualPos>0)
+              {
+                JSec[iSecIndex].KeyNum++;
+                //if(NULL==JSec[iSecIndex].hsKey)
+                int iHashNum = JSec[iSecIndex].KeyNum;
 #ifdef _DEBUGMODE_
                 //printf("JSec[%d].KeyNum={%d}\n",iSecIndex,JSec[iSecIndex].KeyNum);
                 //printf("iHashNum={%d}\n",iHashNum);
 #endif
                 if(1==iHashNum)
-				{
-				  JSec[iSecIndex].hsKey = (JiniHash *)malloc(sizeof(JiniHash));
-				  memset(JSec[iSecIndex].hsKey,0x0,sizeof(JiniHash));
-				  //printf("malloc hsKey={%p}\n",JSec[iSecIndex].hsKey);
-				}
-				else
-				{
-			      JSec[iSecIndex].hsKey = (JiniHash *)realloc(JSec[iSecIndex].hsKey,JSec[iSecIndex].KeyNum*sizeof(JiniHash));
-				}
+                {
+                  JSec[iSecIndex].hsKey = (JiniHash *)malloc(sizeof(JiniHash));
+                  memset(JSec[iSecIndex].hsKey,0x0,sizeof(JiniHash));
+                  //printf("malloc hsKey={%p}\n",JSec[iSecIndex].hsKey);
+                }
+                else
+                {
+                  JSec[iSecIndex].hsKey = (JiniHash *)realloc(JSec[iSecIndex].hsKey,JSec[iSecIndex].KeyNum*sizeof(JiniHash));
+                }
 #ifdef _DEBUGMODE_
                 printf("hsKey={%p}\n",JSec[iSecIndex].hsKey);
 #endif
@@ -315,73 +315,48 @@ bool CJini::FullJiniHashs(int iSectionNum)
 //printf("cLineStr={%s}\n",cLineStr);
                 //init fixed start
                 memset(JSec[iSecIndex].hsKey[iHashNum-1].JiniKey,0x0,260);
-				memset(JSec[iSecIndex].hsKey[iHashNum-1].sJiniValue,0x0,260);
-				JSec[iSecIndex].hsKey[iHashNum-1].iJiniValue = 0x0;
-				//init fixed end
-			    strncpy(JSec[iSecIndex].hsKey[iHashNum-1].JiniKey,cLineStr,iEqualPos);
-				memset(cLineStr,0x20,iEqualPos+1);
-				JiniSpaceTrim(cLineStr);
-				strcpy(JSec[iSecIndex].hsKey[iHashNum-1].sJiniValue,cLineStr);
-			  }
-			}
-			//iSecIndex>=iSectionNum
-			else if(iSecIndex>=iSectionNum)
-			{
+                memset(JSec[iSecIndex].hsKey[iHashNum-1].sJiniValue,0x0,260);
+                JSec[iSecIndex].hsKey[iHashNum-1].iJiniValue = 0x0;
+                //init fixed end
+                strncpy(JSec[iSecIndex].hsKey[iHashNum-1].JiniKey,cLineStr,iEqualPos);
+                memset(cLineStr,0x20,iEqualPos+1);
+                JiniSpaceTrim(cLineStr);
+                strcpy(JSec[iSecIndex].hsKey[iHashNum-1].sJiniValue,cLineStr);
+              }
+            }
+            //iSecIndex>=iSectionNum
+            else if(iSecIndex>=iSectionNum)
+            {
 #ifdef _DEBUGMODE_
               printf("iSecIndex>=iSectionNum Crash!\n");
 #endif
               cIniStr = cVoidInit;
-			  return false;
-			}
-		  }
-          //iSecIndex		  
-		}		
-		cIniStr+=i;
+              return false;
+            }
+          }
+          //iSecIndex          
+        }        
+        cIniStr+=i;
 #ifdef _DEBUGMODE_
         printf("cLineStr={%s}\n",cLineStr);
 #endif
       }
-	  else
-	  {
-	    cIniStr+=i;
-	  }
-	  bAnnoLine = false;
-	  iLinePos  = 0;
-	  i = 0;
-	}
+      else
+      {
+        cIniStr+=i;
+      }
+      bAnnoLine = false;
+      iLinePos  = 0;
+      i = 0;
+    }
   
     if(!bAnnoLine)
-	{
-	  iLinePos++;
-	}
-	i++;
+    {
+      iLinePos++;
+    }
+    i++;
     cTempStr++;
   }
-  /*
-  int iSecPos = -1;
-  int iKeyPos = -1;
-  int iValPos = -1;
-  do
-  {
-    if(*cIniStr=='[')
-	{
-	  iSecPos = 0;
-	}
-	else if(*cIniStr==']')
-	{
-	  iSecPos = 1;
-	}
-	else if(*cIniStr=='\r' ||*cIniStr=='\n')
-	{
-	  iSecPos = -1;
-      iKeyPos = -1;
-      iValPos = -1;
-	}
-    
-    iSectionNum--;
-  }while(iSectionNum>0);
-  free(cIniStr);
-  */
   //reset pointer
   cIniStr = cVoidInit;
   //integer&string format
@@ -416,13 +391,13 @@ void CJini::JiniSpaceTrim(char* cMixStr,int iLRALL)
     while(*cTmpPos!='\0')
     {
       if(!isspace(*cTmpPos))
-	  {
-	    break;
-	  }
-	  else
-	  {
-	    iLeftPos++;
-	  }
+      {
+        break;
+      }
+      else
+      {
+        iLeftPos++;
+      }
       cTmpPos++;
     }
   }
@@ -436,70 +411,70 @@ void CJini::JiniSpaceTrim(char* cMixStr,int iLRALL)
     while(*cTmpPos!='\0')
     {
       if(!isspace(*cTmpPos))
-	  {
-	    break;
-	  }
-	  else
-	  {
-	    iRightPos++;
-	  }
+      {
+        break;
+      }
+      else
+      {
+        iRightPos++;
+      }
       cTmpPos--;
     }
   }
   while(*cTmp!='\0')
   {
     switch(iLRALL)
-	{
-	  //LEFT
-	  case 1:
-	    if(!isspace(cMStr))
-		{
-		  bTrimCancel = true;
-		}
-	    break;
-	  case 2:
-	    bTrimCancel = true;
-		if(j>=(iSLen-iRightPos))
-		{
-		  bTrimCancel = false;
-		}
-	    break;
-	  case 3:
-	    bTrimCancel = false;
-		//left area
-		if(j<iLeftPos)
-		{
-		  bTrimCancel = true;
-		}
-		//right area
-		if(j>=(iSLen-iRightPos))
-		{
-		  bTrimCancel = true;
-		}
-	    break;
-	  default:
-	    break;
-	}
-	if(bTrimCancel)
-	{
-	  cMStr=0x31;
-	}
+    {
+      //LEFT
+      case 1:
+        if(!isspace(cMStr))
+        {
+          bTrimCancel = true;
+        }
+        break;
+      case 2:
+        bTrimCancel = true;
+        if(j>=(iSLen-iRightPos))
+        {
+          bTrimCancel = false;
+        }
+        break;
+      case 3:
+        bTrimCancel = false;
+        //left area
+        if(j<iLeftPos)
+        {
+          bTrimCancel = true;
+        }
+        //right area
+        if(j>=(iSLen-iRightPos))
+        {
+          bTrimCancel = true;
+        }
+        break;
+      default:
+        break;
+    }
+    if(bTrimCancel)
+    {
+      cMStr=0x31;
+    }
     if(!isspace(cMStr/**cTmp*/))
-	{
-	  *cTmpStd = *cTmp;
-	  cTmp++;
-	  cTmpStd++;
+    {
+      *cTmpStd = *cTmp;
+      cTmp++;
+      cTmpStd++;
 #ifdef _DEBUGMODE_
       //printf("cTmp=[%s]\n",cTmp);
       //printf("cTmpStd=[%s]\n",cTmpStd);
 #endif
-	}
-	else
-	{
-	  cTmp++;
-	}
-	cMStr = *cTmp;
-	j++;
+    }
+    else
+    {
+      cTmp++;
+    }
+    cMStr = *cTmp;
+    j++;
   }
   *cTmpStd = '\0';
 #ifdef _DEBUGMODE_
@@ -534,10 +509,10 @@ int CJini::JiniChrIndex(char* cStr,char cFind)
   {
     iRet++;
     if(cFind==*sStrTmp)
-	{
-	  break;
-	}
-	sStrTmp++;
+    {
+      break;
+    }
+    sStrTmp++;
   }
   if((size_t)iRet==(strlen(cStr)-1))
   {
@@ -556,26 +531,26 @@ bool CJini::JiniValFormat(void)
   for(;j<iSectionCount;j++)
   {
     if(JSec[j].KeyNum>0)
-	{
+    {
 #ifdef _IMPORTINFO_S_
       printf("JSec[%d].SectionName=(%s),",j,JSec[j].SectionName);
       printf("KeyNum=(%d)\n",JSec[j].KeyNum);
 #endif
-	  int i = 0;
-	  for(;i<JSec[j].KeyNum;i++)
-	  {
+      int i = 0;
+      for(;i<JSec[j].KeyNum;i++)
+      {
 #ifdef _IMPORTINFO_S_
         printf("JSec[%d].hsKey[%d].JiniKey=(%s),sJiniValue=(%s),",j,i,JSec[j].hsKey[i].JiniKey,JSec[j].hsKey[i].sJiniValue);
 #endif
-	    if(strlen(JSec[j].hsKey[i].sJiniValue)>0)
-		{
-		  JSec[j].hsKey[i].iJiniValue = atoi(JSec[j].hsKey[i].sJiniValue);
-		}
+        if(strlen(JSec[j].hsKey[i].sJiniValue)>0)
+        {
+          JSec[j].hsKey[i].iJiniValue = atoi(JSec[j].hsKey[i].sJiniValue);
+        }
 #ifdef _IMPORTINFO_S_
         printf("iJiniValue=(%d)\n",JSec[j].hsKey[i].iJiniValue);
 #endif
-	  }	
-	}
+      }    
+    }
   }
   return true;
 }
@@ -605,7 +580,7 @@ int main(int argc,char *argv[]) {
   printf("argc[%d]\n", argc);
   for(int i=0;i<argc;i++)
   {
-	printf("argv[%d]=[%s]\n", i,argv[i]);
+    printf("argv[%d]=[%s]\n", i,argv[i]);
   }
   return(0);
 }

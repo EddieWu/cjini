@@ -1,6 +1,15 @@
 [SECTION1]
+Key11=SingInTheRain
+
 
 [SECTION2]
+
 Key21=1
-Key22 = TEST
+Key22 = T;EST
 Key23 = 5
+
+[SECTION3]
+;section test
+Key31 = Forever001
+
+
