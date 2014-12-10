@@ -1,6 +1,9 @@
 #ifndef __JINI_H
 #define __JINI_H
 #define _DEBUGMODE_
+#define _DEBUGFUNCMODE_
+#define LINE_MAX_LENGTH (260)
+#define LINE_MIN_LENGTH (3)
 typedef struct _JiniHash
 {
   char JiniKey[260];
@@ -42,5 +45,11 @@ public:
   bool FullJiniHashs(int iSectionNum=1);
   //trim function
   void JiniSpaceTrim(char* cMixStr,int iLRALL=0);
+  //char is \r\n
+  bool JiniIsEnter(char Unchar);
+  //index of char in string
+  int  JiniChrIndex(char* cStr,char cFind);
+  //value integer&string transfer
+  bool JiniValFormat(void);
 };
 #endif
