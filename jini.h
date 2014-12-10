@@ -1,7 +1,8 @@
 #ifndef __JINI_H
 #define __JINI_H
-#define _DEBUGMODE_
-#define _DEBUGFUNCMODE_
+//#define _DEBUGMODE_
+//#define _DEBUGFUNCMODE_
+#define _IMPORTINFO_S_
 #define LINE_MAX_LENGTH (260)
 #define LINE_MIN_LENGTH (3)
 typedef struct _JiniHash
