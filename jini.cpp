@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <memory.h>
-#include <ctype.h> 
+//#include <ctype.h> 
 #include "jini.h"
 
 CJini::CJini(void)
@@ -390,7 +390,7 @@ void CJini::JiniSpaceTrim(char* cMixStr,int iLRALL)
   {
     while(*cTmpPos!='\0')
     {
-      if(!isspace(*cTmpPos))
+      if(!JiniIsSpace(*cTmpPos))
       {
         break;
       }
@@ -410,7 +410,7 @@ void CJini::JiniSpaceTrim(char* cMixStr,int iLRALL)
     cTmpPos+=(iSLen-1);
     while(*cTmpPos!='\0')
     {
-      if(!isspace(*cTmpPos))
+      if(!JiniIsSpace(*cTmpPos))
       {
         break;
       }
@@ -427,7 +427,7 @@ void CJini::JiniSpaceTrim(char* cMixStr,int iLRALL)
     {
       //LEFT
       case 1:
-        if(!isspace(cMStr))
+        if(!JiniIsSpace(cMStr))
         {
           bTrimCancel = true;
         }
@@ -459,7 +459,7 @@ void CJini::JiniSpaceTrim(char* cMixStr,int iLRALL)
     {
       cMStr=0x31;
     }
-    if(!isspace(cMStr/**cTmp*/))
+    if(!JiniIsSpace(cMStr/**cTmp*/))
     {
       *cTmpStd = *cTmp;
       cTmp++;
@@ -494,6 +494,24 @@ bool CJini::JiniIsEnter(char Unchar)
     return false;
   }
   return true;
+}
+/************************************
+* JiniIsSpace()
+* char is space(\t,\r,\n,\v,\f)
+* argument(Unchar:undertest char)
+************************************/
+bool CJini::JiniIsSpace(char Unchar)
+{
+  if(Unchar=='\r' ||
+     Unchar=='\n' ||
+     Unchar=='\t' ||
+     Unchar=='\v' ||
+     Unchar=='\f' ||
+     Unchar==0x20)
+  {
+    return true;
+  }
+  return false;
 }
 /************************************
 * JiniChrIndex()
@@ -554,6 +572,72 @@ bool CJini::JiniValFormat(void)
   }
   return true;
 }
+/************************************
+* JiniGetKeyStr()
+* get key value(string)
+* argument()
+************************************/
+bool CJini::JiniGetKeyStr(char *cSec,char *cKey,char *def,char *src)
+{
+  //struct JiniSection is empty
+  if(NULL==JSec ||iSectionCount<=0)
+  {
+    return false;
+  }
+  for(int i=0;i<iSectionCount;i++)
+  {
+    //there is no match Section Name
+    if(0!=strcmp(JSec[i].SectionName,cSec))
+    {
+      continue;
+    }
+    int KeysNum = JSec[i].KeyNum;
+    for(int j=0;j<KeysNum;j++)
+    {
+      //there is match Key
+      if(0==strcmp(JSec[i].hsKey[j].JiniKey,cKey))
+      {
+        strcpy(src,JSec[i].hsKey[j].sJiniValue);
+        return true;
+      }
+    }
+  }
+  //there is no match at all
+  strcpy(src,def);
+  return false;
+}
+/************************************
+* JiniGetKeyStr()
+* get key value(integer)
+* argument()
+************************************/
+int CJini::JiniGetKeyInt(char *cSec,char *cKey,int def)
+{
+  //struct JiniSection is empty
+  if(NULL==JSec ||iSectionCount<=0)
+  {
+    return def;
+  }
+  for(int i=0;i<iSectionCount;i++)
+  {
+    //there is no match Section Name
+    if(0!=strcmp(JSec[i].SectionName,cSec))
+    {
+      continue;
+    }
+    int KeysNum = JSec[i].KeyNum;
+    for(int j=0;j<KeysNum;j++)
+    {
+      //there is match Key
+      if(0==strcmp(JSec[i].hsKey[j].JiniKey,cKey))
+      {
+        return JSec[i].hsKey[j].iJiniValue;
+      }
+    }
+  }
+  //there is no match at all
+  return def;
+}
 #ifdef JINI_TEST_MAIN
 #include <stdio.h>
 //int main(void) {
@@ -576,6 +660,12 @@ int main(int argc,char *argv[]) {
   delete pCJini;
   char sFilePath[] = "C:\\test.txt";
   CJini *pCJiniF = new CJini(sFilePath);
+#ifdef _IMPORTINFO_S_
+  char tKeyVal[260] = {0};
+  pCJiniF->JiniGetKeyStr("SECTION1","Key11","",tKeyVal);
+  printf("(STR)Fetch SECTION1's Key11=[%s]\n",tKeyVal);
+  printf("(INT)Fetch SECTION2's Key23=[%d]\n",pCJiniF->JiniGetKeyInt("SECTION2","Key23",0));
+#endif
   delete pCJiniF;
   printf("argc[%d]\n", argc);
   for(int i=0;i<argc;i++)
@@ -584,4 +674,4 @@ int main(int argc,char *argv[]) {
   }
   return(0);
 }
-#endif 
+#endif
